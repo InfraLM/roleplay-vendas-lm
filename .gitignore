@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+dist-server
 *.local
 
 # Editor directories and files
@@ -33,3 +34,6 @@ dist-ssr
 
 # Documentation desnecessária no repo
 DATABASE_SUPA_POST.md
+
+# Legacy backend folder
+backend/
