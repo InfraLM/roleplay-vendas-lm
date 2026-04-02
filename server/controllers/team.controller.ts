@@ -123,3 +123,16 @@ export async function removeMember(req: Request, res: Response, next: NextFuncti
     res.json({ success: true, message: 'Membro removido da organização' });
   } catch (err) { next(err); }
 }
+
+export async function listMemberGoals(req: Request, res: Response, next: NextFunction) {
+  try {
+    const orgId = req.user!.organizationId;
+    if (!orgId) throw new AppError(400, 'Organização não encontrada');
+
+    const goals = await prisma.userGoal.findMany({
+      where: { organizationId: orgId, isActive: true },
+    });
+
+    res.json(goals);
+  } catch (err) { next(err); }
+}
