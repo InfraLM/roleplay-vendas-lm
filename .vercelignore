@@ -1,0 +1,12 @@
+# Documentation
+README.md
+DATABASE_SUPA_POST.md
+
+# IDE/Editor
+.claude/
+.vscode/
+.idea/
+
+# Dev config
+eslint.config.js
+tsconfig.node.json
