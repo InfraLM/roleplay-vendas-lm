@@ -1,0 +1,173 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Liberdade Medica Design System - Red, Black, White
+   All colors in HSL format */
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 7%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 7%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 7%;
+
+    --primary: 0 72% 45%;
+    --primary-light: 0 65% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 12%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 0 10% 95%;
+    --accent-foreground: 0 0% 12%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --achievement: 45 93% 47%;
+    --achievement-foreground: 0 0% 10%;
+
+    --chat-user: 0 60% 48%;
+    --chat-ai: 0 0% 94%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 0 72% 45%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 0 0% 20%;
+    --sidebar-primary: 0 0% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 0 5% 95%;
+    --sidebar-accent-foreground: 0 0% 10%;
+    --sidebar-border: 0 0% 91%;
+    --sidebar-ring: 0 72% 45%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(0 72% 45%), hsl(0 65% 35%));
+    --gradient-achievement: linear-gradient(135deg, hsl(45 93% 47%), hsl(35 90% 50%));
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%), hsl(0 5% 97%));
+
+    --shadow-success: 0 4px 14px hsl(142 76% 36% / 0.25);
+    --shadow-achievement: 0 4px 14px hsl(45 93% 47% / 0.25);
+    --shadow-card: 0 1px 3px hsl(0 0% 0% / 0.08);
+  }
+
+  .dark {
+    --background: 0 0% 5%;
+    --foreground: 0 0% 95%;
+
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 0 72% 50%;
+    --primary-light: 0 60% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
+
+    --accent: 0 5% 15%;
+    --accent-foreground: 0 0% 95%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 95%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --achievement: 45 93% 47%;
+    --achievement-foreground: 0 0% 10%;
+
+    --chat-user: 0 55% 40%;
+    --chat-ai: 0 0% 14%;
+
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 0 72% 50%;
+
+    --sidebar-background: 0 0% 7%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 0 72% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 3% 14%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-border: 0 0% 14%;
+    --sidebar-ring: 0 72% 50%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(0 72% 50%), hsl(0 60% 38%));
+    --gradient-achievement: linear-gradient(135deg, hsl(45 93% 47%), hsl(35 90% 50%));
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 8%), hsl(0 2% 12%));
+
+    --shadow-success: 0 4px 14px hsl(142 71% 45% / 0.2);
+    --shadow-achievement: 0 4px 14px hsl(45 93% 47% / 0.2);
+    --shadow-card: 0 1px 3px hsl(0 0% 0% / 0.3);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Voucher Celebration Animations */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes celebrate-bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.confetti-particle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  animation: confetti-fall 3s ease-out forwards;
+}
+
+.animate-celebrate-bounce {
+  animation: celebrate-bounce 0.6s ease-in-out infinite;
+}

@@ -1,0 +1,44 @@
+import { Router } from 'express';
+import authRoutes from './auth.routes';
+import usersRoutes from './users.routes';
+import organizationsRoutes from './organizations.routes';
+import teamRoutes from './team.routes';
+import segmentsRoutes from './segments.routes';
+import clientProfilesRoutes from './clientProfiles.routes';
+import promptsRoutes from './prompts.routes';
+import roleplayRoutes from './roleplay.routes';
+import chatRoutes from './chat.routes';
+import evaluationRoutes from './evaluation.routes';
+import vouchersRoutes from './vouchers.routes';
+import prizesRoutes from './prizes.routes';
+import ninjaRoutes from './ninja.routes';
+import streaksRoutes from './streaks.routes';
+import goalsRoutes from './goals.routes';
+import analyticsRoutes from './analytics.routes';
+import systemRoutes from './system.routes';
+import leadsRoutes from './leads.routes';
+import sheetsRoutes from './sheets.routes';
+
+const router = Router();
+
+router.use('/auth', authRoutes);
+router.use('/users', usersRoutes);
+router.use('/organizations', organizationsRoutes);
+router.use('/team', teamRoutes);
+router.use('/segments', segmentsRoutes);
+router.use('/client-profiles', clientProfilesRoutes);
+router.use('/prompts', promptsRoutes);
+router.use('/roleplays', roleplayRoutes);
+router.use('/chat', chatRoutes);
+router.use('/evaluations', evaluationRoutes);
+router.use('/vouchers', vouchersRoutes);
+router.use('/prizes', prizesRoutes);
+router.use('/ninja', ninjaRoutes);
+router.use('/streaks', streaksRoutes);
+router.use('/goals', goalsRoutes);
+router.use('/analytics', analyticsRoutes);
+router.use('/system', systemRoutes);
+router.use('/leads', leadsRoutes);
+router.use('/sheets', sheetsRoutes);
+
+export default router;

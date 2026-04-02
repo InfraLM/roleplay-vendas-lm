@@ -1,0 +1,535 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["lovable"]
+}
+
+// ==================== ENUMS ====================
+
+enum UserRole {
+  admin
+  coach
+  vendedor
+  closer
+  sdr
+
+  @@schema("lovable")
+}
+
+enum ClientProfileType {
+  soft
+  hard
+  chato
+  ultra_hard
+
+  @@schema("lovable")
+}
+
+enum RoleplayStatus {
+  active
+  finished
+  aborted
+  paused
+  evaluated
+
+  @@schema("lovable")
+}
+
+enum MessageSender {
+  user
+  ai
+
+  @@schema("lovable")
+}
+
+enum RadarStatus {
+  green
+  yellow
+  red
+  bomb
+
+  @@schema("lovable")
+}
+
+enum VoucherStatus {
+  issued
+  redeemed
+  expired
+  canceled
+
+  @@schema("lovable")
+}
+
+enum FaturamentoRange {
+  nenhum
+  sem_faturamento
+  ate_100_mil
+  cem_mil_a_500_mil       @map("100_mil_a_500_mil")
+  um_a_5_milhoes          @map("1_a_5_milhoes")
+  cinco_a_10_milhoes      @map("5_a_10_milhoes")
+  dez_a_50_milhoes        @map("10_a_50_milhoes")
+  cinquenta_a_100_milhoes @map("50_a_100_milhoes")
+  acima_100_milhoes
+
+  @@schema("lovable")
+}
+
+enum TeamSizeRange {
+  nenhum
+  ate_5
+  seis_a_10            @map("6_a_10")
+  onze_a_20            @map("11_a_20")
+  vinte_e_um_a_50      @map("21_a_50")
+  cinquenta_e_um_a_100 @map("51_a_100")
+  cento_e_um_a_300     @map("101_a_300")
+  acima_300
+
+  @@schema("lovable")
+}
+
+// ==================== TABLES ====================
+
+model User {
+  id                String    @id @default(uuid()) @db.Uuid
+  email             String    @unique
+  passwordHash      String    @map("password_hash")
+  emailConfirmed    Boolean   @default(false) @map("email_confirmed")
+  rawUserMetaData   Json      @default("{}") @map("raw_user_meta_data")
+  resetToken        String?   @map("reset_token")
+  resetTokenExpires DateTime? @map("reset_token_expires")
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  profile       Profile?
+  userRole      UserRoleRecord?
+  refreshTokens RefreshToken[]
+  organizations Organization[]
+
+  @@map("rpv_users")
+  @@schema("lovable")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  tokenHash String   @map("token_hash")
+  expiresAt DateTime @map("expires_at") @db.Timestamptz
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@map("rpv_refresh_tokens")
+  @@schema("lovable")
+}
+
+model Organization {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  adminUserId String   @map("admin_user_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  adminUser            User                  @relation(fields: [adminUserId], references: [id])
+  profiles             Profile[]
+  roleplays            Roleplay[]
+  reports              Report[]
+  exportedReports      ExportedReport[]
+  performanceSnapshots PerformanceSnapshot[]
+  promptTemplates      PromptTemplate[]
+  prizes               Prize[]
+  prizeRedemptions     PrizeRedemption[]
+  userGoals            UserGoal[]
+
+  @@map("rpv_organizations")
+  @@schema("lovable")
+}
+
+model Profile {
+  id                  String    @id @default(uuid()) @db.Uuid
+  userId              String    @unique @map("user_id") @db.Uuid
+  organizationId      String?   @map("organization_id") @db.Uuid
+  name                String
+  email               String
+  team                String?
+  phone               String?
+  hireDate            String?   @map("hire_date")
+  specialties         String[]  @default([])
+  notes               String?
+  status              String?   @default("active")
+  onboardingCompleted Boolean?  @default(false) @map("onboarding_completed")
+  visitedPages        Json?     @map("visited_pages")
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  roleplays    Roleplay[]    @relation("UserRoleplays")
+  vouchers     Voucher[]     @relation("UserVouchers")
+
+  @@index([organizationId])
+  @@map("rpv_profiles")
+  @@schema("lovable")
+}
+
+model UserRoleRecord {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @unique @map("user_id") @db.Uuid
+  role      UserRole @default(vendedor)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("rpv_user_roles")
+  @@schema("lovable")
+}
+
+model LeadPlataforma {
+  id          String           @id @default(uuid()) @db.Uuid
+  nome        String
+  email       String
+  cargo       String           @default("")
+  telefone    String?
+  siteEmpresa String?          @map("site_empresa")
+  faturamento FaturamentoRange @default(nenhum)
+  tamanhoTime TeamSizeRange    @default(nenhum) @map("tamanho_time")
+  userCreated Boolean          @default(false) @map("user_created")
+  userId      String?          @map("user_id") @db.Uuid
+  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("rpv_leads_plataforma")
+  @@schema("lovable")
+}
+
+model Segment {
+  id            String   @id @default(uuid()) @db.Uuid
+  name          String
+  description   String?
+  promptContext String   @map("prompt_context")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  roleplays Roleplay[]
+
+  @@map("rpv_segments")
+  @@schema("lovable")
+}
+
+model ClientProfile {
+  id             String            @id @default(uuid()) @db.Uuid
+  name           ClientProfileType
+  displayName    String            @map("display_name")
+  objectionStyle String            @map("objection_style")
+  toneParams     Json              @default("{}") @map("tone_params")
+  whatsappStyle  Boolean           @default(true) @map("whatsapp_style")
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  roleplays Roleplay[]
+
+  @@map("rpv_client_profiles")
+  @@schema("lovable")
+}
+
+model Roleplay {
+  id             String         @id @default(uuid()) @db.Uuid
+  userId         String         @map("user_id") @db.Uuid
+  organizationId String?        @map("organization_id") @db.Uuid
+  segmentId      String         @map("segment_id") @db.Uuid
+  profileId      String         @map("profile_id") @db.Uuid
+  status         RoleplayStatus @default(active)
+  messageCount   Int            @default(0) @map("message_count")
+  messageLimit   Int            @default(50) @map("message_limit")
+  guidedMode     Boolean?       @default(false) @map("guided_mode")
+  startedAt      DateTime       @default(now()) @map("started_at") @db.Timestamptz
+  finishedAt     DateTime?      @map("finished_at") @db.Timestamptz
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  user          Profile       @relation("UserRoleplays", fields: [userId], references: [userId])
+  organization  Organization? @relation(fields: [organizationId], references: [id])
+  segment       Segment       @relation(fields: [segmentId], references: [id])
+  clientProfile ClientProfile @relation(fields: [profileId], references: [id])
+  messages      Message[]
+  report        Report?
+  vouchers      Voucher[]
+
+  @@index([userId])
+  @@index([organizationId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("rpv_roleplays")
+  @@schema("lovable")
+}
+
+model Message {
+  id         String        @id @default(uuid()) @db.Uuid
+  roleplayId String        @map("roleplay_id") @db.Uuid
+  sender     MessageSender
+  content    String
+  turnNumber Int           @map("turn_number")
+  timestamp  DateTime      @default(now()) @db.Timestamptz
+  createdAt  DateTime      @default(now()) @map("created_at") @db.Timestamptz
+
+  roleplay Roleplay @relation(fields: [roleplayId], references: [id], onDelete: Cascade)
+
+  @@index([roleplayId])
+  @@index([turnNumber])
+  @@map("rpv_messages")
+  @@schema("lovable")
+}
+
+model Report {
+  id                   String      @id @default(uuid()) @db.Uuid
+  roleplayId           String      @unique @map("roleplay_id") @db.Uuid
+  organizationId       String?     @map("organization_id") @db.Uuid
+  scoreOverall         Float       @map("score_overall")
+  closeProbability     Float       @map("close_probability")
+  scores               Json        @default("{}")
+  radar                RadarStatus
+  htmlReport           String      @map("html_report")
+  feedbackGeral        String?     @map("feedback_geral")
+  pontosFortes         Json?       @map("pontos_fortes")
+  areasMelhoria        Json?       @map("areas_melhoria")
+  proximosPassos       Json?       @map("proximos_passos")
+  feedbackCompetencias Json?       @map("feedback_competencias")
+  createdAt            DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  roleplay     Roleplay      @relation(fields: [roleplayId], references: [id])
+  organization Organization? @relation(fields: [organizationId], references: [id])
+
+  @@index([roleplayId])
+  @@index([organizationId])
+  @@map("rpv_reports")
+  @@schema("lovable")
+}
+
+model Voucher {
+  id         String        @id @default(uuid()) @db.Uuid
+  userId     String        @map("user_id") @db.Uuid
+  roleplayId String        @map("roleplay_id") @db.Uuid
+  code       String        @unique
+  status     VoucherStatus @default(issued)
+  metadata   Json          @default("{}")
+  expiresAt  DateTime?     @map("expires_at") @db.Timestamptz
+  createdAt  DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  user     Profile  @relation("UserVouchers", fields: [userId], references: [userId])
+  roleplay Roleplay @relation(fields: [roleplayId], references: [id])
+
+  @@index([userId])
+  @@index([code])
+  @@map("rpv_vouchers")
+  @@schema("lovable")
+}
+
+model PromptTemplate {
+  id             String   @id @default(uuid()) @db.Uuid
+  organizationId String?  @map("organization_id") @db.Uuid
+  type           String
+  template       String
+  variables      Json     @default("[]")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  organization Organization? @relation(fields: [organizationId], references: [id])
+
+  @@map("rpv_prompt_templates")
+  @@schema("lovable")
+}
+
+model NinjaRank {
+  id                String    @id @default(uuid()) @db.Uuid
+  level             Int       @unique
+  name              String
+  emoji             String
+  color             String
+  description       String?
+  xpToNextLevel     Int?      @map("xp_to_next_level")
+  requiredRoleplays Int?      @map("required_roleplays")
+  requiredAvgScore  Float?    @map("required_avg_score")
+  requiredStreak    Int?      @map("required_streak")
+  requiredVouchers  Int?      @map("required_vouchers")
+  createdAt         DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("rpv_ninja_ranks")
+  @@schema("lovable")
+}
+
+model UserNinjaProgress {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @unique @map("user_id") @db.Uuid
+  currentLevel   Int?      @default(1) @map("current_level")
+  currentXp      Int?      @default(0) @map("current_xp")
+  totalXp        Int?      @default(0) @map("total_xp")
+  totalRoleplays Int?      @default(0) @map("total_roleplays")
+  avgScore       Float?    @default(0) @map("avg_score")
+  bestStreak     Int?      @default(0) @map("best_streak")
+  totalVouchers  Int?      @default(0) @map("total_vouchers")
+  levelUpAt      DateTime? @map("level_up_at") @db.Timestamptz
+  createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("rpv_user_ninja_progress")
+  @@schema("lovable")
+}
+
+model UserStreak {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @unique @map("user_id") @db.Uuid
+  currentStreak    Int       @default(0) @map("current_streak")
+  longestStreak    Int       @default(0) @map("longest_streak")
+  lastActivityDate String?   @map("last_activity_date")
+  streakUpdatedAt  DateTime? @map("streak_updated_at") @db.Timestamptz
+  createdAt        DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("rpv_user_streaks")
+  @@schema("lovable")
+}
+
+model UserGoal {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  organizationId   String?   @map("organization_id") @db.Uuid
+  roleplaysPerWeek Int?      @map("roleplays_per_week")
+  minScore         Float?    @map("min_score")
+  vouchersPerMonth Int?      @map("vouchers_per_month")
+  setBy            String?   @map("set_by") @db.Uuid
+  notes            String?
+  isActive         Boolean?  @default(true) @map("is_active")
+  createdAt        DateTime? @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  organization Organization? @relation(fields: [organizationId], references: [id])
+
+  @@index([userId])
+  @@index([organizationId])
+  @@map("rpv_user_goals")
+  @@schema("lovable")
+}
+
+model Prize {
+  id                String    @id @default(uuid()) @db.Uuid
+  organizationId    String?   @map("organization_id") @db.Uuid
+  name              String
+  description       String?
+  imageUrl          String?   @map("image_url")
+  vouchersRequired  Int       @default(1) @map("vouchers_required")
+  quantityAvailable Int?      @map("quantity_available")
+  category          String?
+  isActive          Boolean?  @default(true) @map("is_active")
+  createdAt         DateTime? @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  organization Organization?    @relation(fields: [organizationId], references: [id])
+  redemptions  PrizeRedemption[]
+
+  @@index([organizationId])
+  @@index([isActive])
+  @@map("rpv_prizes")
+  @@schema("lovable")
+}
+
+model PrizeRedemption {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  prizeId        String    @map("prize_id") @db.Uuid
+  organizationId String?   @map("organization_id") @db.Uuid
+  voucherIds     String[]  @map("voucher_ids") @db.Uuid
+  status         String    @default("pending")
+  notes          String?
+  createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  prize        Prize         @relation(fields: [prizeId], references: [id])
+  organization Organization? @relation(fields: [organizationId], references: [id])
+
+  @@map("rpv_prize_redemptions")
+  @@schema("lovable")
+}
+
+model ExportedReport {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  organizationId String?  @map("organization_id") @db.Uuid
+  reportType     String   @map("report_type")
+  title          String
+  dateFrom       String   @map("date_from")
+  dateTo         String   @map("date_to")
+  reportData     Json     @default("{}") @map("report_data")
+  filters        Json?
+  generatedAt    DateTime @default(now()) @map("generated_at") @db.Timestamptz
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  organization Organization? @relation(fields: [organizationId], references: [id])
+
+  @@map("rpv_exported_reports")
+  @@schema("lovable")
+}
+
+model PerformanceSnapshot {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  organizationId String?  @map("organization_id") @db.Uuid
+  snapshotDate   String   @map("snapshot_date")
+  roleplaysCount Int      @default(0) @map("roleplays_count")
+  averageScore   Float?   @map("average_score")
+  bestScore      Float?   @map("best_score")
+  vouchersEarned Int?     @map("vouchers_earned")
+  rapportAvg     Float?   @map("rapport_avg")
+  escutaAvg      Float?   @map("escuta_avg")
+  clarezaAvg     Float?   @map("clareza_avg")
+  persuasaoAvg   Float?   @map("persuasao_avg")
+  objecoesAvg    Float?   @map("objecoes_avg")
+  fechamentoAvg  Float?   @map("fechamento_avg")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  organization Organization? @relation(fields: [organizationId], references: [id])
+
+  @@index([userId, snapshotDate])
+  @@index([organizationId, snapshotDate])
+  @@map("rpv_performance_snapshots")
+  @@schema("lovable")
+}
+
+model AuditLog {
+  id        String    @id @default(uuid()) @db.Uuid
+  tableName String    @map("table_name")
+  action    String
+  oldValues Json?     @map("old_values")
+  newValues Json?     @map("new_values")
+  userId    String?   @map("user_id") @db.Uuid
+  timestamp DateTime? @default(now()) @db.Timestamptz
+
+  @@map("rpv_audit_log")
+  @@schema("lovable")
+}
+
+model SystemConfig {
+  id        String   @id @default(uuid()) @db.Uuid
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("rpv_system_config")
+  @@schema("lovable")
+}
+
+model SystemSettings {
+  id                  String   @id @default(uuid()) @db.Uuid
+  registrationEnabled Boolean  @default(true) @map("registration_enabled")
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("rpv_system_settings")
+  @@schema("lovable")
+}
