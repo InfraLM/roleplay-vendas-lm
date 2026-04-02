@@ -47,7 +47,7 @@ const mainMenuItems = [
 
 const adminMenuItems = [
   { title: "Gerenciar Equipe", url: "/admin/equipe", icon: Users },
-  { title: "Gerenciar Segmentos", url: "/admin/cenarios", icon: Layers },
+  { title: "Gerenciar Produtos", url: "/admin/cenarios", icon: Layers },
   { title: "Gerenciar Perfis", url: "/admin/cenarios", icon: UserCircle },
   { title: "Gerenciar Prompts", url: "/admin/configuracoes", icon: FileText },
   { title: "Gerenciar Prêmios", url: "/admin/premios", icon: Gift },
@@ -134,7 +134,7 @@ export function AppSidebar() {
                     {adminMenuItems.map((item) => {
                       const onboardingKey = item.title === "Gerenciar Equipe"
                         ? "menu-equipe"
-                        : item.title === "Gerenciar Segmentos" || item.title === "Gerenciar Perfis"
+                        : item.title === "Gerenciar Produtos" || item.title === "Gerenciar Perfis"
                           ? "menu-cenarios"
                           : item.title === "Gerenciar Prompts"
                             ? "menu-prompts"

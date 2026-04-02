@@ -76,10 +76,10 @@ export interface TableSchema {
 export const TABLE_SCHEMAS: TableSchema[] = [
   {
     table: 'segments',
-    label: 'Segmentos',
+    label: 'Produtos',
     requiredColumns: ['name', 'prompt_context'],
     optionalColumns: ['description'],
-    description: 'Segmentos de mercado para simulações de roleplay.',
+    description: 'Produtos para simulações de roleplay.',
   },
   {
     table: 'client_profiles',

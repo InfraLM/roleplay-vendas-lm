@@ -7,8 +7,10 @@ export interface Segment {
   name: string;
   description: string | null;
   promptContext: string;
+  salesObjective: 'qualificacao' | 'fechamento' | 'completo';
   // Compatibility aliases
   prompt_context?: string;
+  sales_objective?: string;
 }
 
 export interface ClientProfile {

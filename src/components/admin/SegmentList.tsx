@@ -95,11 +95,11 @@ const SegmentList = ({ segments, isLoading, onCreate, onUpdate, onDelete }: Segm
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium text-foreground">
-          {segments.length} segmento{segments.length !== 1 ? 's' : ''}
+          {segments.length} produto{segments.length !== 1 ? 's' : ''}
         </h3>
         <Button onClick={() => setIsCreateOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
-          Novo Segmento
+          Novo Produto
         </Button>
       </div>
 
@@ -155,7 +155,7 @@ const SegmentList = ({ segments, isLoading, onCreate, onUpdate, onDelete }: Segm
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Novo Segmento</DialogTitle>
+            <DialogTitle>Novo Produto</DialogTitle>
           </DialogHeader>
           <SegmentForm
             onSubmit={handleCreate}
@@ -168,7 +168,7 @@ const SegmentList = ({ segments, isLoading, onCreate, onUpdate, onDelete }: Segm
       <Dialog open={!!editingSegment} onOpenChange={() => setEditingSegment(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Editar Segmento</DialogTitle>
+            <DialogTitle>Editar Produto</DialogTitle>
           </DialogHeader>
           {editingSegment && (
             <SegmentForm
@@ -184,9 +184,9 @@ const SegmentList = ({ segments, isLoading, onCreate, onUpdate, onDelete }: Segm
       <AlertDialog open={!!deletingSegment} onOpenChange={() => setDeletingSegment(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir Segmento</AlertDialogTitle>
+            <AlertDialogTitle>Excluir Produto</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir o segmento "{deletingSegment?.name}"? 
+              Tem certeza que deseja excluir o produto "{deletingSegment?.name}"? 
               Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>

@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
-import type { Segment, SegmentFormData } from "@/hooks/useSegmentManager";
+import type { Segment, SegmentFormData, SalesObjective } from "@/hooks/useSegmentManager";
+import { SALES_OBJECTIVE_LABELS } from "@/hooks/useSegmentManager";
 
 interface SegmentFormProps {
   segment?: Segment;
@@ -16,7 +18,10 @@ const SegmentForm = ({ segment, onSubmit, onCancel }: SegmentFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState(segment?.name || "");
   const [description, setDescription] = useState(segment?.description || "");
-  const [promptContext, setPromptContext] = useState(segment?.prompt_context || "");
+  const [promptContext, setPromptContext] = useState(segment?.prompt_context || segment?.promptContext || "");
+  const [salesObjective, setSalesObjective] = useState<SalesObjective>(
+    segment?.sales_objective || segment?.salesObjective || "completo"
+  );
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -37,7 +42,7 @@ const SegmentForm = ({ segment, onSubmit, onCancel }: SegmentFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validate()) return;
 
     setIsSubmitting(true);
@@ -45,7 +50,8 @@ const SegmentForm = ({ segment, onSubmit, onCancel }: SegmentFormProps) => {
       await onSubmit({
         name: name.trim(),
         description: description.trim() || undefined,
-        prompt_context: promptContext.trim()
+        prompt_context: promptContext.trim(),
+        sales_objective: salesObjective,
       });
     } finally {
       setIsSubmitting(false);
@@ -55,12 +61,12 @@ const SegmentForm = ({ segment, onSubmit, onCancel }: SegmentFormProps) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="name">Nome do Segmento *</Label>
+        <Label htmlFor="name">Nome do Produto *</Label>
         <Input
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Ex: E-commerce B2C"
+          placeholder="Ex: Pós-Graduação em Paciente Grave"
           className={errors.name ? "border-destructive" : ""}
         />
         {errors.name && (
@@ -74,18 +80,41 @@ const SegmentForm = ({ segment, onSubmit, onCancel }: SegmentFormProps) => {
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Descrição breve do segmento..."
+          placeholder="Descrição breve do produto..."
           rows={2}
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="prompt_context">Contexto do Prompt *</Label>
+        <Label htmlFor="sales_objective">Objetivo da Venda *</Label>
+        <Select value={salesObjective} onValueChange={(v) => setSalesObjective(v as SalesObjective)}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="qualificacao">
+              {SALES_OBJECTIVE_LABELS.qualificacao} — Agendar reunião e qualificar lead
+            </SelectItem>
+            <SelectItem value="fechamento">
+              {SALES_OBJECTIVE_LABELS.fechamento} — Fechar a venda
+            </SelectItem>
+            <SelectItem value="completo">
+              {SALES_OBJECTIVE_LABELS.completo} — Processo completo
+            </SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          Define o tipo de simulação. SDRs treinam qualificação, Closers treinam fechamento.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="prompt_context">Contexto do Produto para a IA *</Label>
         <Textarea
           id="prompt_context"
           value={promptContext}
           onChange={(e) => setPromptContext(e.target.value)}
-          placeholder="Descreva o contexto do segmento para a IA simular o cliente..."
+          placeholder="Descreva as características do produto, público-alvo, objeções comuns, diferenciais..."
           rows={6}
           className={errors.prompt_context ? "border-destructive" : ""}
         />

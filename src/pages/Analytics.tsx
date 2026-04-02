@@ -126,10 +126,10 @@ const Analytics = () => {
                 onValueChange={(value) => setSelectedSegmentId(value === 'all' ? undefined : value)}
               >
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Segmento" />
+                  <SelectValue placeholder="Produto" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos os Segmentos</SelectItem>
+                  <SelectItem value="all">Todos os Produtos</SelectItem>
                   {segments?.map((seg) => (
                     <SelectItem key={seg.id} value={seg.id}>
                       {seg.name}
@@ -214,7 +214,7 @@ const Analytics = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <SegmentBreakdown 
                     data={report.segmentAnalysis || []} 
-                    title="Por Segmento"
+                    title="Por Produto"
                     labelKey="segment"
                   />
                   <SegmentBreakdown 

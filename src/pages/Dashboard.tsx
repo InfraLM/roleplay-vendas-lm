@@ -186,7 +186,7 @@ const Dashboard = () => {
       // Map history roleplays with scores
       const historyRoleplays: HistoryRoleplay[] = roleplays.map((r: any) => ({
         id: r.id,
-        segment_name: r.segmentName || r.segment?.name || "Segmento",
+        segment_name: r.segmentName || r.segment?.name || "Produto",
         segment_description: r.segmentDescription || r.segment?.description || null,
         client_name: r.clientProfileName || r.clientProfile?.displayName || "Cliente",
         created_at: r.createdAt,
@@ -259,7 +259,7 @@ const Dashboard = () => {
 
       const recentRoleplays = roleplays.slice(0, 5).map((r: any) => ({
         id: r.id,
-        segment_name: r.segmentName || r.segment?.name || "Segmento",
+        segment_name: r.segmentName || r.segment?.name || "Produto",
         created_at: r.createdAt,
         score: scoresMap.get(r.id) || null,
       }));
@@ -684,7 +684,7 @@ const Dashboard = () => {
               <CardHeader>
                 <CardTitle className="text-lg">Iniciar Novo Treinamento</CardTitle>
                 <CardDescription>
-                  Escolha um segmento e perfil de cliente para praticar
+                  Escolha um produto e perfil de cliente para praticar
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -728,7 +728,7 @@ const Dashboard = () => {
                   </div>
                 ) : (
                   <p className="text-muted-foreground text-center py-6">
-                    Nenhum segmento disponível
+                    Nenhum produto disponível
                   </p>
                 )}
               </CardContent>
@@ -760,10 +760,10 @@ const Dashboard = () => {
 
                   <Select value={segmentFilter} onValueChange={setSegmentFilter}>
                     <SelectTrigger className="w-[180px] bg-muted/50 border-border/50">
-                      <SelectValue placeholder="Segmentos" />
+                      <SelectValue placeholder="Produtos" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todos Segmentos</SelectItem>
+                      <SelectItem value="all">Todos Produtos</SelectItem>
                       {uniqueSegments.map(segment => (
                         <SelectItem key={segment} value={segment}>{segment}</SelectItem>
                       ))}
@@ -970,10 +970,10 @@ const Dashboard = () => {
 
                   <Select value={rankingSegmentFilter} onValueChange={setRankingSegmentFilter}>
                     <SelectTrigger className="w-[180px] bg-muted/50 border-border/50">
-                      <SelectValue placeholder="Segmentos" />
+                      <SelectValue placeholder="Produtos" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todos Segmentos</SelectItem>
+                      <SelectItem value="all">Todos Produtos</SelectItem>
                       {segments.map(segment => (
                         <SelectItem key={segment.id} value={segment.id}>{segment.name}</SelectItem>
                       ))}

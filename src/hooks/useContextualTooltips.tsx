@@ -20,7 +20,7 @@ const PAGE_TOOLTIPS: Record<string, ContextualTooltip> = {
     description: 'Aqui você escolhe como será seu treinamento!',
     icon: Play,
     tips: [
-      'Escolha um **segmento de mercado** para o contexto da venda',
+      'Escolha um **produto** para o contexto da venda',
       'Selecione o **perfil do cliente** para definir a dificuldade',
       'Ative o **Modo Guiado** para receber dicas em tempo real durante o roleplay',
     ],

@@ -41,7 +41,7 @@ export const adminSteps: OnboardingStep[] = [
   },
   {
     id: 'segments-profiles',
-    title: 'Segmentos e Perfis',
+    title: 'Produtos e Perfis',
     description: 'Configure os <strong>mercados de atuação</strong> (SaaS, E-commerce, Agências) e os <strong>tipos de cliente</strong> (Receptivo, Desafiador, Difícil) para as simulações.',
     icon: Target,
     targetElement: '[data-onboarding="menu-cenarios"]',
@@ -94,7 +94,7 @@ export const vendedorSteps: OnboardingStep[] = [
   {
     id: 'start-roleplay',
     title: 'Inicie um Roleplay',
-    description: 'Clique em "<strong>Novo Roleplay</strong>" para escolher um segmento de mercado e perfil de cliente.<br/><br/>A IA vai simular um <strong>cliente real</strong> para você praticar.',
+    description: 'Clique em "<strong>Novo Roleplay</strong>" para escolher um produto e perfil de cliente.<br/><br/>A IA vai simular um <strong>cliente real</strong> para você praticar.',
     icon: Play,
     targetElement: '[data-onboarding="menu-novo-roleplay"]',
     position: 'right',

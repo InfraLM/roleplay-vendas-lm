@@ -166,7 +166,7 @@ export function OnboardingCelebration({ onClose }: OnboardingCelebrationProps) {
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-xs text-primary">2</span>
-                    Configure os segmentos de mercado
+                    Configure os produtos
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-xs text-primary">3</span>

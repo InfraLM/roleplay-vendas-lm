@@ -88,9 +88,10 @@ export async function evaluate(req: Request, res: Response, next: NextFunction) 
       evaluationPrompt = `Você é um AVALIADOR RIGOROSO de vendedores. Analise a conversa abaixo com critério profissional.
 
 CONTEXTO:
-- Segmento: {{segment_name}}
+- Produto: {{segment_name}}
 - Perfil do Cliente: {{profile_display_name}}
 - Estilo de Objeção: {{objection_style}}
+- Objetivo da Venda: {{sales_objective_label}}
 
 TRANSCRIÇÃO:
 {{transcript}}
@@ -101,11 +102,17 @@ RAPPORT, ESCUTA ATIVA, CLAREZA, PERSUASÃO, OBJEÇÕES, FECHAMENTO
 ## REGRAS DE PONTUAÇÃO
 - SEJA RIGOROSO! Vendedores medíocres devem receber notas medíocres (40-60).
 - Notas acima de 80 são APENAS para performance EXCEPCIONAL.
+- Avalie de acordo com o OBJETIVO: se é qualificação (SDR), valorize a capacidade de agendar reunião e qualificar. Se é fechamento (Closer), valorize negociação e fechamento.
 
 IMPORTANTE: Responda APENAS com JSON válido.`;
     }
 
     const segment = roleplay.segment;
+    const salesObjLabels: Record<string, string> = {
+      qualificacao: 'Qualificação / Agendamento de reunião (SDR)',
+      fechamento: 'Fechamento de venda (Closer)',
+      completo: 'Venda completa (qualificação + fechamento)',
+    };
     const profile = roleplay.clientProfile;
 
     evaluationPrompt = evaluationPrompt
@@ -113,7 +120,8 @@ IMPORTANTE: Responda APENAS com JSON válido.`;
       .replace(/\{\{profile_name\}\}/g, profile?.name || '')
       .replace(/\{\{profile_display_name\}\}/g, profile?.displayName || '')
       .replace(/\{\{objection_style\}\}/g, profile?.objectionStyle || '')
-      .replace(/\{\{transcript\}\}/g, transcript);
+      .replace(/\{\{transcript\}\}/g, transcript)
+      .replace(/\{\{sales_objective_label\}\}/g, salesObjLabels[segment?.salesObjective || 'completo'] || salesObjLabels.completo);
 
     // Call AI with tool calling
     const aiData = await callAi({

@@ -137,7 +137,7 @@ const AdminEquipe = () => {
       color: "text-primary" 
     },
     { 
-      label: "Segmentos", 
+      label: "Produtos",
       value: segmentsCount, 
       subtitle: "Configurados",
       icon: Layers, 

@@ -68,7 +68,7 @@ const PromptTester = ({ type, template, onTest, isTesting }: PromptTesterProps) 
               <>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Nome do Segmento</Label>
+                    <Label>Nome do Produto</Label>
                     <Input
                       value={testData.segment?.name || ''}
                       onChange={(e) => setTestData({
@@ -90,7 +90,7 @@ const PromptTester = ({ type, template, onTest, isTesting }: PromptTesterProps) 
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Descrição do Segmento</Label>
+                  <Label>Descrição do Produto</Label>
                   <Textarea
                     value={testData.segment?.description || ''}
                     onChange={(e) => setTestData({
@@ -102,7 +102,7 @@ const PromptTester = ({ type, template, onTest, isTesting }: PromptTesterProps) 
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Contexto do Segmento</Label>
+                  <Label>Contexto do Produto</Label>
                   <Textarea
                     value={testData.segment?.prompt_context || ''}
                     onChange={(e) => setTestData({

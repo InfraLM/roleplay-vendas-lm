@@ -86,7 +86,7 @@ const RoleplaySelection = () => {
         if (data) {
           setPausedRoleplays(data.map(r => ({
             id: r.id,
-            segment_name: r.segmentName || r.segment?.name || 'Segmento',
+            segment_name: r.segmentName || r.segment?.name || 'Produto',
             client_name: r.clientProfileName || r.clientProfile?.displayName || 'Cliente',
             message_count: r.messageCount,
             message_limit: r.messageLimit,
@@ -192,7 +192,7 @@ const RoleplaySelection = () => {
         <section className="animate-fade-in">
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-foreground mb-2">
-              1. Escolha o <span className="gradient-text">Segmento</span>
+              1. Escolha o <span className="gradient-text">Produto</span>
             </h2>
             <p className="text-muted-foreground">Selecione o mercado que você quer praticar</p>
           </div>
@@ -230,6 +230,11 @@ const RoleplaySelection = () => {
                       <p className="text-sm text-muted-foreground line-clamp-2">
                         {segment.description || segment.prompt_context}
                       </p>
+                      {(segment.salesObjective || segment.sales_objective) && (segment.salesObjective || segment.sales_objective) !== 'completo' && (
+                        <Badge variant="outline" className="mt-2 text-xs">
+                          {(segment.salesObjective || segment.sales_objective) === 'qualificacao' ? '📞 SDR — Qualificação' : '🤝 Closer — Fechamento'}
+                        </Badge>
+                      )}
                     </CardContent>
                   </Card>
                 );

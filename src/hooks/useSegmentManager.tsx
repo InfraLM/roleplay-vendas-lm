@@ -2,11 +2,16 @@ import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
+export type SalesObjective = 'qualificacao' | 'fechamento' | 'completo';
+
 export interface Segment {
   id: string;
   name: string;
   description: string | null;
   prompt_context: string;
+  promptContext?: string;
+  sales_objective: SalesObjective;
+  salesObjective?: SalesObjective;
   created_at: string;
   updated_at: string;
 }
@@ -15,7 +20,14 @@ export interface SegmentFormData {
   name: string;
   description?: string;
   prompt_context: string;
+  sales_objective: SalesObjective;
 }
+
+export const SALES_OBJECTIVE_LABELS: Record<SalesObjective, string> = {
+  qualificacao: 'Qualificação (SDR)',
+  fechamento: 'Fechamento (Closer)',
+  completo: 'Completo (SDR + Closer)',
+};
 
 export const useSegmentManager = () => {
   const [segments, setSegments] = useState<Segment[]>([]);
@@ -47,11 +59,12 @@ export const useSegmentManager = () => {
       const newSegment = await api.post<Segment>('/segments', {
         name: data.name.trim(),
         description: data.description?.trim() || null,
-        prompt_context: data.prompt_context.trim()
+        prompt_context: data.prompt_context.trim(),
+        sales_objective: data.sales_objective,
       });
 
       toast({
-        title: "Segmento criado",
+        title: "Produto criado",
         description: `${data.name} foi criado com sucesso`,
       });
 
@@ -60,7 +73,7 @@ export const useSegmentManager = () => {
     } catch (err: any) {
       toast({
         title: "Erro",
-        description: err.message || "Erro ao criar segmento",
+        description: err.message || "Erro ao criar produto",
         variant: "destructive",
       });
       throw err;
@@ -73,11 +86,12 @@ export const useSegmentManager = () => {
       if (data.name !== undefined) updateData.name = data.name.trim();
       if (data.description !== undefined) updateData.description = data.description?.trim() || null;
       if (data.prompt_context !== undefined) updateData.prompt_context = data.prompt_context.trim();
+      if (data.sales_objective !== undefined) updateData.sales_objective = data.sales_objective;
 
       const updated = await api.put<Segment>(`/segments/${id}`, updateData);
 
       toast({
-        title: "Segmento atualizado",
+        title: "Produto atualizado",
         description: "Alterações salvas com sucesso",
       });
 
@@ -86,7 +100,7 @@ export const useSegmentManager = () => {
     } catch (err: any) {
       toast({
         title: "Erro",
-        description: err.message || "Erro ao atualizar segmento",
+        description: err.message || "Erro ao atualizar produto",
         variant: "destructive",
       });
       throw err;
@@ -98,15 +112,15 @@ export const useSegmentManager = () => {
       await api.delete(`/segments/${id}`);
 
       toast({
-        title: "Segmento excluído",
-        description: "Segmento removido com sucesso",
+        title: "Produto excluído",
+        description: "Produto removido com sucesso",
       });
 
       await fetchSegments();
     } catch (err: any) {
       toast({
         title: "Erro",
-        description: err.message || "Erro ao excluir segmento",
+        description: err.message || "Erro ao excluir produto",
         variant: "destructive",
       });
       throw err;

@@ -287,7 +287,7 @@ const AdminRelatorios = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Usuário</TableHead>
-                      <TableHead>Segmento</TableHead>
+                      <TableHead>Produto</TableHead>
                       <TableHead>Perfil</TableHead>
                       <TableHead>Score</TableHead>
                       <TableHead>Status</TableHead>

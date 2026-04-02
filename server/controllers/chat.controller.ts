@@ -3,9 +3,25 @@ import { prisma } from '../config/database';
 import { AppError } from '../middleware/errorHandler';
 import { callAi, callAiLite, AiError } from '../services/ai.service';
 
+const SALES_OBJECTIVE_CONTEXT: Record<string, { vendedorLabel: string; objetivoCliente: string }> = {
+  qualificacao: {
+    vendedorLabel: 'SDR (pré-vendedor)',
+    objetivoCliente: 'O vendedor está tentando AGENDAR UMA REUNIÃO e qualificar você como lead. Ele NÃO deve tentar fechar a venda agora — o objetivo dele é despertar seu interesse e marcar uma conversa mais aprofundada com um closer. Comporte-se como alguém que está sendo abordado pela primeira vez e ainda não conhece bem o produto.',
+  },
+  fechamento: {
+    vendedorLabel: 'Closer (fechador)',
+    objetivoCliente: 'O vendedor é um closer tentando FECHAR A VENDA com você. Você já teve um contato inicial (com um SDR) e já demonstrou algum interesse. Agora o closer vai apresentar a proposta completa, negociar valores e condições. Faça perguntas sobre preço, condições, garantias e compare com concorrentes.',
+  },
+  completo: {
+    vendedorLabel: 'Vendedor',
+    objetivoCliente: 'O vendedor está conduzindo todo o processo de venda — desde a qualificação até o fechamento. Comporte-se naturalmente, começando com pouco conhecimento do produto e evoluindo conforme a conversa avança.',
+  },
+};
+
 export async function sendMessage(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user!.userId;
+    const userRole = req.user!.role;
     const { roleplayId, message, turnNumber } = req.body;
 
     if (!roleplayId || !message || turnNumber === undefined) {
@@ -16,7 +32,6 @@ export async function sendMessage(req: Request, res: Response, next: NextFunctio
       throw new AppError(400, 'Mensagem muito longa (máx 2000 caracteres)');
     }
 
-    // Verify user owns this roleplay
     const roleplay = await prisma.roleplay.findFirst({
       where: { id: roleplayId, userId },
       include: {
@@ -32,14 +47,22 @@ export async function sendMessage(req: Request, res: Response, next: NextFunctio
     const segment = roleplay.segment;
     const profile = roleplay.clientProfile;
 
-    // Fetch message history
+    // Determine sales objective context based on product config + user role
+    const productObjective = segment?.salesObjective || 'completo';
+    let effectiveObjective = productObjective;
+    if (productObjective === 'completo') {
+      // If product supports both, use user's role to determine
+      if (userRole === 'sdr') effectiveObjective = 'qualificacao';
+      else if (userRole === 'closer') effectiveObjective = 'fechamento';
+    }
+    const objContext = SALES_OBJECTIVE_CONTEXT[effectiveObjective] || SALES_OBJECTIVE_CONTEXT.completo;
+
     const messageHistory = await prisma.message.findMany({
       where: { roleplayId },
       orderBy: { turnNumber: 'asc' },
       select: { sender: true, content: true },
     });
 
-    // Fetch org prompt template or use fallback
     let systemPrompt = '';
     const promptTemplate = await prisma.promptTemplate.findFirst({
       where: { type: 'client', organizationId: roleplay.organizationId },
@@ -50,10 +73,13 @@ export async function sendMessage(req: Request, res: Response, next: NextFunctio
     } else {
       systemPrompt = `Você é um cliente potencial em uma simulação de vendas.
 
-CONTEXTO DO SEGMENTO:
-- Segmento: {{segment_name}}
+PRODUTO:
+- Nome: {{segment_name}}
 - Descrição: {{segment_description}}
 - Contexto: {{segment_context}}
+
+PAPEL DO VENDEDOR: {{vendedor_label}}
+OBJETIVO DA SIMULAÇÃO: {{objetivo_cliente}}
 
 SEU PERFIL DE CLIENTE:
 - Tipo: {{profile_name}} ({{profile_display_name}})
@@ -65,10 +91,10 @@ REGRAS:
 3. Seja realista - faça objeções naturais baseadas no seu perfil
 4. NÃO revele que é uma IA ou simulação
 5. Mantenha consistência com o perfil durante toda a conversa
-6. Responda de forma concisa (máximo 3-4 frases por mensagem)`;
+6. Responda de forma concisa (máximo 3-4 frases por mensagem)
+7. Adapte suas respostas ao objetivo da simulação descrito acima`;
     }
 
-    // Replace variables
     systemPrompt = systemPrompt
       .replace(/\{\{segment_name\}\}/g, segment?.name || '')
       .replace(/\{\{segment_description\}\}/g, segment?.description || '')
@@ -76,6 +102,8 @@ REGRAS:
       .replace(/\{\{profile_name\}\}/g, profile?.name || '')
       .replace(/\{\{profile_display_name\}\}/g, profile?.displayName || '')
       .replace(/\{\{objection_style\}\}/g, profile?.objectionStyle || '')
+      .replace(/\{\{vendedor_label\}\}/g, objContext.vendedorLabel)
+      .replace(/\{\{objetivo_cliente\}\}/g, objContext.objetivoCliente)
       .replace(/\$\{segment\.name\}/g, segment?.name || '')
       .replace(/\$\{segment\.description\}/g, segment?.description || '')
       .replace(/\$\{segment\.prompt_context\}/g, segment?.promptContext || '')
@@ -83,7 +111,6 @@ REGRAS:
       .replace(/\$\{profile\.display_name\}/g, profile?.displayName || '')
       .replace(/\$\{profile\.objection_style\}/g, profile?.objectionStyle || '');
 
-    // Build messages array
     const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
       { role: 'system', content: systemPrompt },
     ];
@@ -97,11 +124,9 @@ REGRAS:
 
     messages.push({ role: 'user', content: message });
 
-    // Call AI
     const aiData = await callAi({ messages });
     const aiMessage = aiData.choices[0]?.message?.content || 'Desculpe, não entendi. Pode repetir?';
 
-    // Generate coaching tip if guided mode
     let tip: string | null = null;
     if (isGuidedMode && message.length > 10) {
       try {
@@ -111,8 +136,9 @@ MENSAGEM DO VENDEDOR:
 "${message}"
 
 CONTEXTO:
-- Segmento: ${segment?.name || 'Geral'}
+- Produto: ${segment?.name || 'Geral'}
 - Perfil do cliente: ${profile?.displayName || 'Cliente'} (${profile?.objectionStyle || 'padrão'})
+- Papel do vendedor: ${objContext.vendedorLabel}
 
 REGRAS:
 1. Seja MUITO conciso (máximo 2 frases)
@@ -128,17 +154,14 @@ REGRAS:
       }
     }
 
-    // Save user message
     await prisma.message.create({
       data: { roleplayId, sender: 'user', content: message, turnNumber },
     });
 
-    // Save AI message
     await prisma.message.create({
       data: { roleplayId, sender: 'ai', content: aiMessage, turnNumber: turnNumber + 1 },
     });
 
-    // Update roleplay message count
     await prisma.roleplay.update({
       where: { id: roleplayId },
       data: { messageCount: turnNumber + 2 },

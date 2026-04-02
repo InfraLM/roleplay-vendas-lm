@@ -74,7 +74,7 @@ export default function Setup() {
       details: [
         'Banco de dados 100% limpo',
         'Gamificação com 5 níveis configurados',
-        'Admin pode criar segmentos e perfis manualmente',
+        'Admin pode criar produtos e perfis manualmente',
       ],
       recommended: true,
     },
@@ -82,11 +82,11 @@ export default function Setup() {
       id: 'import' as const,
       icon: Upload,
       title: 'Importar CSV',
-      description: 'Upload de arquivo CSV para popular segmentos, perfis de clientes e prêmios.',
+      description: 'Upload de arquivo CSV para popular produtos, perfis de clientes e prêmios.',
       details: [
         'Validação de schema antes de importar',
         'Preview dos dados antes de confirmar',
-        'Suporte a segmentos, perfis e prêmios',
+        'Suporte a produtos, perfis e prêmios',
       ],
     },
     {

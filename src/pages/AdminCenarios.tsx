@@ -57,13 +57,13 @@ const AdminCenarios = () => {
             <span className="gradient-text">Cenários</span> de Roleplay
           </h1>
           <p className="text-muted-foreground">
-            Gerencie segmentos de mercado e perfis de cliente
+            Gerencie produtos e perfis de cliente
           </p>
         </div>
 
         <Tabs defaultValue="segments" className="animate-scale-in">
           <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="segments">Segmentos</TabsTrigger>
+            <TabsTrigger value="segments">Produtos</TabsTrigger>
             <TabsTrigger value="profiles">Perfis de Cliente</TabsTrigger>
           </TabsList>
 
