@@ -10,6 +10,9 @@ import routes from './routes';
 
 const app = express();
 
+// Trust proxy (required for Vercel/reverse proxy - fixes X-Forwarded-For and rate limiting)
+app.set('trust proxy', 1);
+
 // CORS must come before helmet to handle preflight OPTIONS
 app.use(cors(corsOptions));
 app.use(helmet());

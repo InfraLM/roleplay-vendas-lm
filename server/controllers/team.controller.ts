@@ -53,30 +53,35 @@ export async function inviteUser(req: Request, res: Response, next: NextFunction
     const userPassword = password || 'Mudar@123';
     const passwordHash = await hashPassword(userPassword);
 
-    const newUser = await prisma.user.create({
-      data: {
-        email,
-        passwordHash,
-        emailConfirmed: true,
-        rawUserMetaData: { name, phone: phone || null },
-      },
-    });
+    // Transaction: if any step fails, everything rolls back
+    const newUser = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          email,
+          passwordHash,
+          emailConfirmed: true,
+          rawUserMetaData: { name, phone: phone || null },
+        },
+      });
 
-    await prisma.profile.create({
-      data: {
-        userId: newUser.id,
-        organizationId: orgId,
-        name,
-        email,
-        team: team || null,
-        phone: phone || null,
-        notes: notes || null,
-        status: password ? 'active' : 'pending',
-      },
-    });
+      await tx.profile.create({
+        data: {
+          userId: user.id,
+          organizationId: orgId,
+          name,
+          email,
+          team: team || null,
+          phone: phone || null,
+          notes: notes || null,
+          status: password ? 'active' : 'pending',
+        },
+      });
 
-    await prisma.userRoleRecord.create({
-      data: { userId: newUser.id, role },
+      await tx.userRoleRecord.create({
+        data: { userId: user.id, role },
+      });
+
+      return user;
     });
 
     res.status(201).json({
