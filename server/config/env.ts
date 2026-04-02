@@ -1,9 +1,10 @@
 import { z } from 'zod';
 import dotenv from 'dotenv';
 
-// Load .env from project root (for local dev)
-// On Vercel, env vars are already in process.env
-dotenv.config();
+// Load the appropriate .env file
+// Vercel sets env vars directly, so dotenv won't override them
+dotenv.config({ path: '.env.dev' });
+dotenv.config({ path: '.env' });
 
 const envSchema = z.object({
   PORT: z.string().default('3001'),
